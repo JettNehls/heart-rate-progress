@@ -1,14 +1,14 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { mockWorkouts } from "../data/mockWorkouts";
+import { mockWorkout } from "../data/mockWorkout";
 import {
   calculateAverageRestingHR,
   calculateRecoveryTime,
 } from "../services/metricsService";
 
 export default function HomeScreen() {
-  const restingHR = calculateAverageRestingHR(mockWorkouts);
-  const latestWorkout = mockWorkouts[mockWorkouts.length - 1];
+  const restingHR = calculateAverageRestingHR(mockWorkout);
+  const latestWorkout = mockWorkout[mockWorkout.length - 1];
   const recoveryTime = calculateRecoveryTime(latestWorkout);
 
   return (

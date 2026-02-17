@@ -1,6 +1,6 @@
 import { Workout } from "../models/Workout";
 
-export const mockWorkouts: Workout[] = [
+export const mockWorkout: Workout[] = [
   {
     id: "1",
     date: "2026-02-01",
