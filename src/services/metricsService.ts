@@ -1,18 +1,38 @@
-import { Workout } from "../models/Workout";
+import { HeartRateEntry } from "./samsungHealthService";
 
-export function calculateAverageRestingHR(workouts: Workout[]): number {
-  const restingSamples = workouts.flatMap((workout) =>
-    workout.heartRate.filter((sample) => sample.timestamp < 120),
-  );
-  const total = restingSamples.reduce((sum, sample) => sum + sample.bpm, 0);
-  return Math.round(total / restingSamples.length);
+/*
+Calculate average resting heart rate.
+For now we treat resting HR as anything under 80 bpm.
+You can improve this later by filtering by time of day.
+*/
+export function calculateAverageRestingHR(
+  data: HeartRateEntry[],
+): number | null {
+  if (data.length === 0) return null;
+
+  const resting = data.filter((entry) => entry.bpm < 80);
+
+  if (resting.length === 0) return null;
+
+  const total = resting.reduce((sum, entry) => sum + entry.bpm, 0);
+
+  return Math.round(total / resting.length);
 }
 
-export function calculateRecoveryTime(workout: Workout): number | null {
-  const peak = Math.max(...workout.heartRate.map((sample) => sample.bpm));
-  const target = peak - 20;
-  const recoveryPoint = workout.heartRate.find(
-    (sample) => sample.bpm <= target && sample.timestamp > 600,
-  );
-  return recoveryPoint ? recoveryPoint.timestamp : null;
+/*
+Calculate maximum heart rate in dataset
+*/
+export function calculateMaxHR(data: HeartRateEntry[]): number | null {
+  if (data.length === 0) return null;
+
+  return Math.max(...data.map((entry) => entry.bpm));
+}
+
+/*
+Calculate minimum heart rate in dataset
+*/
+export function calculateMinHR(data: HeartRateEntry[]): number | null {
+  if (data.length === 0) return null;
+
+  return Math.min(...data.map((entry) => entry.bpm));
 }
