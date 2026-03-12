@@ -3,7 +3,6 @@ import { HeartRateEntry } from "./samsungHealthService";
 /*
 Calculate average resting heart rate.
 For now we treat resting HR as anything under 80 bpm.
-You can improve this later by filtering by time of day.
 */
 export function calculateAverageRestingHR(
   data: HeartRateEntry[],

@@ -12,7 +12,10 @@ export async function loadSamsungHeartRate(): Promise<HeartRateEntry[]> {
   const response = await fetch(SHEET_URL);
   const csvText = await response.text();
 
-  const parsed = Papa.parse(csvText, {
+  // Samsung CSV includes a metadata row we need to remove
+  const cleanedCSV = csvText.split("\n").slice(1).join("\n");
+
+  const parsed = Papa.parse(cleanedCSV, {
     header: true,
     skipEmptyLines: true,
   });
@@ -22,7 +25,6 @@ export async function loadSamsungHeartRate(): Promise<HeartRateEntry[]> {
   const cleaned = rows
     .map((row) => {
       const timestamp = row["com.samsung.health.heart_rate.start_time"];
-
       const heartRate = row["com.samsung.health.heart_rate.heart_rate"];
 
       if (!timestamp || !heartRate) return null;
@@ -33,6 +35,8 @@ export async function loadSamsungHeartRate(): Promise<HeartRateEntry[]> {
       };
     })
     .filter(Boolean) as HeartRateEntry[];
+
+  console.log("Loaded heart rate entries:", cleaned.length);
 
   return cleaned;
 }

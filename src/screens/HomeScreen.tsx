@@ -12,6 +12,7 @@ import {
   calculateMaxHR,
   calculateMinHR,
 } from "../services/metricsService";
+
 import {
   HeartRateEntry,
   loadSamsungHeartRate,
@@ -71,6 +72,11 @@ export default function HomeScreen() {
       <View style={styles.card}>
         <Text style={styles.metricLabel}>Min Heart Rate</Text>
         <Text style={styles.metricValue}>{minHR ?? "N/A"} bpm</Text>
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.metricLabel}>Total Data Points</Text>
+        <Text style={styles.metricValue}>{data.length}</Text>
       </View>
     </ScrollView>
   );
