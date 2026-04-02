@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from "react";
 import {
-    Dimensions,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Dimensions,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 import { LineChart } from "react-native-chart-kit";
 
 import {
-    HeartRateEntry,
-    loadSamsungHeartRate,
+  HeartRateEntry,
+  loadSamsungHeartRate,
 } from "../services/samsungHealthService";
 
 const screenWidth = Dimensions.get("window").width;
@@ -25,7 +25,9 @@ export default function TrendsScreen() {
 
   const [labels, setLabels] = useState<string[]>([]);
   const [values, setValues] = useState<number[]>([]);
+  const [average, setAverage] = useState<number | null>(null);
 
+  // Load data
   useEffect(() => {
     async function loadData() {
       const result = await loadSamsungHeartRate();
@@ -35,8 +37,11 @@ export default function TrendsScreen() {
     loadData();
   }, []);
 
+  // Process data
   useEffect(() => {
     if (data.length === 0) return;
+
+    setAverage(null); // reset each time
 
     const now = new Date();
     let cutoff = new Date();
@@ -53,11 +58,14 @@ export default function TrendsScreen() {
       .filter((d) => d.timestamp >= cutoff)
       .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
 
-    // 🔥 YEAR = BI-WEEKLY AVERAGES
-    if (period === "year") {
-      const startDate = filtered[0]?.timestamp;
-      if (!startDate) return;
+    let newLabels: string[] = [];
+    let newValues: number[] = [];
 
+    // YEAR → BI-WEEKLY AVERAGES
+    if (period === "year") {
+      if (filtered.length === 0) return;
+
+      const startDate = filtered[0].timestamp;
       const buckets: { [key: number]: number[] } = {};
 
       filtered.forEach((entry) => {
@@ -66,39 +74,37 @@ export default function TrendsScreen() {
 
         const bucket = Math.floor(diffDays / 14);
 
-        if (!buckets[bucket]) {
-          buckets[bucket] = [];
-        }
-
+        if (!buckets[bucket]) buckets[bucket] = [];
         buckets[bucket].push(entry.bpm);
       });
 
-      const newLabels: string[] = [];
-      const newValues: number[] = [];
-
       Object.keys(buckets).forEach((key) => {
-        const bucket = Number(key);
-        const readings = buckets[bucket];
+        const readings = buckets[Number(key)];
 
         const avg =
           readings.reduce((sum, val) => sum + val, 0) / readings.length;
 
         newValues.push(Math.round(avg));
-        newLabels.push(`W${bucket * 2 + 1}`);
+        newLabels.push(`W${Number(key) * 2 + 1}`);
       });
-
-      setLabels(newLabels);
-      setValues(newValues);
     }
 
-    // ✅ WEEK + MONTH (raw points)
+    // WEEK + MONTH (raw data)
     else {
-      const newLabels = filtered.map((d) => d.timestamp.toLocaleDateString());
+      newLabels = filtered.map((d) => d.timestamp.toLocaleDateString());
+      newValues = filtered.map((d) => d.bpm);
+    }
 
-      const newValues = filtered.map((d) => d.bpm);
+    // Set chart data
+    setLabels(newLabels);
+    setValues(newValues);
 
-      setLabels(newLabels);
-      setValues(newValues);
+    // ALWAYS calculate average
+    if (newValues.length > 0) {
+      const avg =
+        newValues.reduce((sum, val) => sum + val, 0) / newValues.length;
+
+      setAverage(Math.round(avg));
     }
   }, [data, period]);
 
@@ -106,7 +112,6 @@ export default function TrendsScreen() {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Heart Rate Trends</Text>
 
-      {/* Period Selector */}
       <View style={styles.buttons}>
         {["week", "month", "year"].map((p) => (
           <TouchableOpacity
@@ -121,7 +126,10 @@ export default function TrendsScreen() {
         ))}
       </View>
 
-      {/* Chart */}
+      {average !== null && (
+        <Text style={styles.average}>Average: {average} bpm</Text>
+      )}
+
       {values.length > 0 && (
         <LineChart
           data={{
@@ -139,7 +147,10 @@ export default function TrendsScreen() {
             labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
             style: { borderRadius: 16 },
           }}
-          style={{ marginVertical: 10, borderRadius: 16 }}
+          style={{
+            marginVertical: 10,
+            borderRadius: 16,
+          }}
         />
       )}
     </ScrollView>
@@ -182,5 +193,11 @@ const styles = StyleSheet.create({
   activeText: {
     color: "white",
     fontWeight: "bold",
+  },
+
+  average: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
   },
 });

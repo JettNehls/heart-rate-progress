@@ -16,6 +16,13 @@ export default function TabLayout() {
           title: "Trends",
         }}
       />
+
+      <Tabs.Screen
+        name="health-info"
+        options={{
+          title: "Health Info",
+        }}
+      />
     </Tabs>
   );
 }
