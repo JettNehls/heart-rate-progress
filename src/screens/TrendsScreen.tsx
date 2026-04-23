@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
   },
 
   activeButton: {
-    backgroundColor: "#ff4d4d",
+    backgroundColor: "#16c000",
   },
 
   buttonText: {

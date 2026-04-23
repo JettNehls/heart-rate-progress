@@ -2,14 +2,14 @@ import React, { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import {
-    HeartRateEntry,
-    loadSamsungHeartRate,
+  HeartRateEntry,
+  loadSamsungHeartRate,
 } from "../services/samsungHealthService";
 
 import {
-    calculateAverageRestingHR,
-    calculateMaxHR,
-    calculateMinHR,
+  calculateAverageRestingHR,
+  calculateMaxHR,
+  calculateMinHR,
 } from "../services/metricsService";
 
 export default function HealthInfoScreen() {
